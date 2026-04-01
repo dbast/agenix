@@ -358,8 +358,13 @@ e.g. inside your `flake.nix` file:
 5. Add secret to a NixOS module config:
    ```nix
    {
-     age.secrets.secret1.file = ../secrets/secret1.age;
-   }
+      age.identityPaths = [
+        "/etc/ssh/ssh_host_ed25519_key"
+        "/etc/age/host.key" # optional age identity; add explicitly
+      ];
+
+      age.secrets.secret1.file = ../secrets/secret1.age;
+    }
    ```
    When the `age.secrets` attribute set contains a secret, the `agenix` NixOS module will later automatically decrypt and mount that secret under the default path `/run/agenix/secret1`.
    Here the `secret1.age` file becomes part of your NixOS deployment, i.e. moves into the Nix store.
@@ -383,14 +388,16 @@ e.g. inside your `flake.nix` file:
    ```ShellSession
    $ agenix -e secret1.age
    ```
-   It assumes your SSH private key or age identity is in `~/.ssh/`.
+   It assumes your SSH private key is in `~/.ssh/` or your age identity is in `~/.config/age/*.key`.
    In order to decrypt and open a `.age` file for editing you need the private key or age identity of one of the public keys
    it was encrypted with. You can pass the private key you want to use explicitly with `-i`, e.g.
    ```ShellSession
    $ agenix -e secret1.age -i ~/.ssh/id_ed25519
    ```
 
-   For post-quantum age keys generated with `age-keygen -pq`, the default identity location is `~/.ssh/age.key`.
+   For post-quantum age keys generated with `age-keygen -pq`, the preferred identity location is `~/.config/age/*.key`.
+
+   Note: `agenix` CLI auto-discovers `~/.config/age/*.key`, but NixOS/home-manager modules only use `age.identityPaths`; add age key paths there explicitly if you use module-based decryption.
 
 ### Using agenix with home-manager
 
@@ -402,7 +409,10 @@ The home-manager module follows the same general principles as the NixOS module 
 ```nix
 {
   age = {
-    identityPaths = [ "~/.ssh/id_ed25519" ];
+    identityPaths = [
+      "${config.home.homeDirectory}/.ssh/id_ed25519"
+      "${config.home.homeDirectory}/.config/age/user1-pq.key" # optional age identity; add explicitly
+    ];
     secrets = {
       example-secret = {
         file = ../secrets/example-secret.age;

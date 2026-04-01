@@ -7,8 +7,9 @@
     USER1_UID="${toString config.users.users.user1.uid}"
     USERS_GID="${toString config.users.groups.users.gid}"
 
-    mkdir -p /etc/ssh /home/user1/.ssh
+    mkdir -p /etc/ssh /home/user1/.ssh /home/user1/.config/age
     chown $USER1_UID:$USERS_GID /home/user1/.ssh
+    chown -R $USER1_UID:$USERS_GID /home/user1/.config
     (
       umask u=rw,g=r,o=r
       cp ${../example_keys/system1.pub} /etc/ssh/ssh_host_ed25519_key.pub
@@ -24,8 +25,8 @@
     )
     (
       umask u=rw,g=,o=
-      cp ${../example_keys/user1-pq.age} /home/user1/.ssh/age.key
-      chown $USER1_UID:$USERS_GID /home/user1/.ssh/age.key
+      cp ${../example_keys/user1-pq.age} /home/user1/.config/age/user1-pq.key
+      chown $USER1_UID:$USERS_GID /home/user1/.config/age/user1-pq.key
     )
     cp -r "${../example}" /tmp/secrets
     chmod -R u+rw /tmp/secrets

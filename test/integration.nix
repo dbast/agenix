@@ -58,7 +58,10 @@ pkgs.testers.nixosTest {
           home.stateVersion = pkgs.lib.trivial.release;
 
           age = {
-            identityPaths = options.age.identityPaths.default ++ [ "/home/user1/.ssh/this_key_wont_exist" ];
+            identityPaths = options.age.identityPaths.default ++ [
+              "/home/user1/.config/age/user1-pq.key"
+              "/home/user1/.ssh/this_key_wont_exist"
+            ];
             secrets.secret2 = {
               # Only decryptable by user1's key
               file = ../example/secret2.age;
@@ -146,7 +149,7 @@ pkgs.testers.nixosTest {
       # and get it back out via --decrypt
       assert "secret1234" in system1.succeed(userDo("agenix -d passwordfile-user1.age"))
 
-      # Test CLI auto-discovery of post-quantum keys in ~/.ssh/age.key
+      # Test CLI auto-discovery of post-quantum keys in ~/.config/age/*.key
       # Remove SSH keys to ensure only the PQ key is used for decryption
       system1.succeed(userDo("mv ~/.ssh/id_ed25519 ~/.ssh/id_ed25519.bak"))
       assert "post-quantum secret test" in system1.succeed(userDo("agenix -d secret-pq.age"))
